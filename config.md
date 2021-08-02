@@ -211,7 +211,14 @@ For Linux-based systems, the `process` object supports the following process-spe
     This is a per-process setting, where as [`disableOOMKiller`](config-linux.md#memory) is scoped for a memory cgroup.
     For more information on how these two settings work together, see [the memory cgroup documentation section 10. OOM Contol][cgroup-v1-memory_2].
 * **`selinuxLabel`** (string, OPTIONAL) specifies the SELinux label for the process.
-    For more information about SELinux, see  [SELinux documentation][selinux].
+    For more information about SELinux, see [SELinux documentation][selinux].
+* **`landlock`** (object, OPTIONAL) specifies the Landlock unprivileged access control settings for the container process.
+    For more information about Landlock, see [Landlock documentation][landlock].
+    `landlock` contains the following properties:
+
+    * **`ruleset`** (object, OPTIONAL) the `ruleset` field identifies a set of rules (i.e., actions on objects) that need to be handled (i.e., restricted).
+    * **`rules`** (array of objects, OPTIONAL) the `rules` field specifies the security policies (i.e., actions allowed on objects) to be added to an existing ruleset
+    * **`abi`** (object, OPTIONAL) the `abi` field defines the specific Landlock ABI version.
 
 ### <a name="configUser" />User
 
@@ -253,6 +260,65 @@ _Note: symbolic name for uid and gid, such as uname and gname respectively, are 
     ],
     "apparmorProfile": "acme_secure_profile",
     "selinuxLabel": "system_u:system_r:svirt_lxc_net_t:s0:c124,c675",
+    "landlock": {
+        "ruleset": {
+            "handledAcessFS": [
+                "LANDLOCK_ACCESS_FS_EXECUTE",
+                "LANDLOCK_ACCESS_FS_WRITE_FILE",
+                "LANDLOCK_ACCESS_FS_READ_FILE",
+                "LANDLOCK_ACCESS_FS_READ_DIR",
+                "LANDLOCK_ACCESS_FS_REMOVE_DIR",
+                "LANDLOCK_ACCESS_FS_REMOVE_FILE",
+                "LANDLOCK_ACCESS_FS_MAKE_CHAR",
+                "LANDLOCK_ACCESS_FS_MAKE_DIR",
+                "LANDLOCK_ACCESS_FS_MAKE_REG",
+                "LANDLOCK_ACCESS_FS_MAKE_SOCK",
+                "LANDLOCK_ACCESS_FS_MAKE_FIFO",
+                "LANDLOCK_ACCESS_FS_MAKE_BLOCK",
+                "LANDLOCK_ACCESS_FS_MAKE_SYM"
+            ]
+        },
+        "rules": [
+            {
+                "type": "path_beneath",
+                "restrictPaths": {
+                    "allowedAccess": [
+                        "LANDLOCK_ACCESS_FS_EXECUTE",
+                        "LANDLOCK_ACCESS_FS_READ_FILE",
+                        "LANDLOCK_ACCESS_FS_READ_DIR"
+                    ],
+                    "paths": [
+                        "/usr",
+                        "/bin"
+                    ]
+                }
+            },
+            {
+                "type": "path_beneath",
+                "restrictPaths": {
+                    "allowedAccess": [
+                        "LANDLOCK_ACCESS_FS_EXECUTE",
+                        "LANDLOCK_ACCESS_FS_WRITE_FILE",
+                        "LANDLOCK_ACCESS_FS_READ_FILE",
+                        "LANDLOCK_ACCESS_FS_READ_DIR",
+                        "LANDLOCK_ACCESS_FS_REMOVE_DIR",
+                        "LANDLOCK_ACCESS_FS_REMOVE_FILE",
+                        "LANDLOCK_ACCESS_FS_MAKE_CHAR",
+                        "LANDLOCK_ACCESS_FS_MAKE_DIR",
+                        "LANDLOCK_ACCESS_FS_MAKE_REG",
+                        "LANDLOCK_ACCESS_FS_MAKE_SOCK",
+                        "LANDLOCK_ACCESS_FS_MAKE_FIFO",
+                        "LANDLOCK_ACCESS_FS_MAKE_BLOCK",
+                        "LANDLOCK_ACCESS_FS_MAKE_SYM"
+                    ],
+                    "paths": [
+                        "/tmp"
+                    ]
+                }
+            },
+        ],
+        "abi": "v1"
+    },
     "noNewPrivileges": true,
     "capabilities": {
         "bounding": [
@@ -958,7 +1024,8 @@ Here is a full example `config.json` for reference.
 
 [apparmor]: https://wiki.ubuntu.com/AppArmor
 [cgroup-v1-memory_2]: https://www.kernel.org/doc/Documentation/cgroup-v1/memory.txt
-[selinux]:http://selinuxproject.org/page/Main_Page
+[selinux]: http://selinuxproject.org/page/Main_Page
+[landlock]: https://landlock.io
 [no-new-privs]: https://www.kernel.org/doc/Documentation/prctl/no_new_privs.txt
 [proc_2]: https://www.kernel.org/doc/Documentation/filesystems/proc.txt
 [umask.2]: http://pubs.opengroup.org/onlinepubs/009695399/functions/umask.html
