@@ -59,16 +59,19 @@ type Process struct {
 	// SelinuxLabel specifies the selinux context that the container process is run as.
 	SelinuxLabel string `json:"selinuxLabel,omitempty" platform:"linux"`
 	// Landlock specifies the Landlock unprivileged access control settings for the container process.
-	Landlock Landlock `json:"landlock,omitempty" platform:"linux"`
+	// `noNewPrivileges` must be enabled to use Landlock.
+	Landlock *Landlock `json:"landlock,omitempty" platform:"linux"`
 }
 
 // Landlock specifies the Landlock unprivileged access control settings for the container process.
 type Landlock struct {
 	// Ruleset identifies a set of rules (i.e., actions on objects) that need to be handled.
-	Ruleset LandlockRuleset `json:"ruleset,omitempty" platform:"linux"`
+	Ruleset *LandlockRuleset `json:"ruleset,omitempty" platform:"linux"`
 	// Rules are the security policies (i.e., actions allowed on objects) to be added to an existing ruleset.
-	Rules []LandlockRule `json:"rules,omitempty" platform:"linux"`
+	Rules *LandlockRules `json:"rules,omitempty" platform:"linux"`
 	// ABI is the specific Landlock ABI version.
+	// This should be used by the runtime to check if the kernel supports the specified sets of Landlock
+	// features and then enforce those following a best-effort security approach.
 	ABI LandlockABIVersion `json:"abi,omitempty" platform:"linux"`
 }
 
@@ -76,20 +79,18 @@ type Landlock struct {
 type LandlockRuleset struct {
 	// HandledAccessFS is a list of actions that is handled by this ruleset and should then be
 	// forbidden if no rule explicitly allow them.
-	HandledAccessFS []LandlockFSAction `json:"handledAcessFS,omitempty" platform:"linux"`
+	HandledAccessFS []LandlockFSAction `json:"handledAccessFS,omitempty" platform:"linux"`
 }
 
-// LandlockRule represents the security policies (i.e., actions allowed on objects) .
-type LandlockRule struct {
-	// Type is the Landlock rule type pointing to the rules to be added to an existing ruleset.
-	Type LandlockRuleType `json:"type,omitempty" platform:"linux"`
-	// RestrictPaths defines the file-hierarchy typed rule.
-	RestrictPaths LandlockRestrictPaths `json:"restrictPaths,omitempty" platform:"linux"`
+// LandlockRules represents the security policies (i.e., actions allowed on objects).
+type LandlockRules struct {
+	// PathBeneath specifies the file-hierarchy typed rules.
+	PathBeneath []LandlockRulePathBeneath `json:"pathBeneath,omitempty" platform:"linux"`
 }
 
-// LandlockRestrictPaths defines the file-hierarchy typed rule that grants the access rights specified by
+// LandlockRulePathBeneath defines the file-hierarchy typed rule that grants the access rights specified by
 // `AllowedAccess` to the file hierarchies under the given `Paths`.
-type LandlockRestrictPaths struct {
+type LandlockRulePathBeneath struct {
 	// AllowedAccess contains a list of allowed filesystem actions for the file hierarchies.
 	AllowedAccess []LandlockFSAction `json:"allowedAccess,omitempty" platform:"linux"`
 	// Paths are the files or parent directories of the file hierarchies to restrict.
@@ -104,32 +105,24 @@ const (
 	V1 LandlockABIVersion = "v1"
 )
 
-// LandlockRuleType taken upon adding a new Landlock rule to a ruleset.
-type LandlockRuleType string
-
-// Define types for Landlock rules. There is currently only one Landlock rule type.
-const (
-	PathBeneath LandlockRuleType = "path_beneath"
-)
-
 // LandlockFSAction used to specify the FS actions that are handled by a ruleset or allowed by a rule.
 type LandlockFSAction string
 
 // Define actions on files and directories that Landlock can restrict a sandboxed process to.
 const (
-	FSActExecute    LandlockFSAction = "LANDLOCK_ACCESS_FS_EXECUTE"
-	FSActWriteFile  LandlockFSAction = "LANDLOCK_ACCESS_FS_WRITE_FILE"
-	FSActReadFile   LandlockFSAction = "LANDLOCK_ACCESS_FS_READ_FILE"
-	FSActReadDir    LandlockFSAction = "LANDLOCK_ACCESS_FS_READ_DIR"
-	FSActRemoveDir  LandlockFSAction = "LANDLOCK_ACCESS_FS_REMOVE_DIR"
-	FSActRemoveFile LandlockFSAction = "LANDLOCK_ACCESS_FS_REMOVE_FILE"
-	FSActMakeChar   LandlockFSAction = "LANDLOCK_ACCESS_FS_MAKE_CHAR"
-	FSActMakeDir    LandlockFSAction = "LANDLOCK_ACCESS_FS_MAKE_DIR"
-	FSActMakeReg    LandlockFSAction = "LANDLOCK_ACCESS_FS_MAKE_REG"
-	FSActMakeSock   LandlockFSAction = "LANDLOCK_ACCESS_FS_MAKE_SOCK"
-	FSActMakeFifo   LandlockFSAction = "LANDLOCK_ACCESS_FS_MAKE_FIFO"
-	FSActMakeBlock  LandlockFSAction = "LANDLOCK_ACCESS_FS_MAKE_BLOCK"
-	FSActMakeSym    LandlockFSAction = "LANDLOCK_ACCESS_FS_MAKE_SYM"
+	FSActExecute    LandlockFSAction = "execute"
+	FSActWriteFile  LandlockFSAction = "write_file"
+	FSActReadFile   LandlockFSAction = "read_file"
+	FSActReadDir    LandlockFSAction = "read_dir"
+	FSActRemoveDir  LandlockFSAction = "remove_dir"
+	FSActRemoveFile LandlockFSAction = "remove_file"
+	FSActMakeChar   LandlockFSAction = "make_char"
+	FSActMakeDir    LandlockFSAction = "make_dir"
+	FSActMakeReg    LandlockFSAction = "make_reg"
+	FSActMakeSock   LandlockFSAction = "make_sock"
+	FSActMakeFifo   LandlockFSAction = "make_fifo"
+	FSActMakeBlock  LandlockFSAction = "make_block"
+	FSActMakeSym    LandlockFSAction = "make_sym"
 )
 
 // LinuxCapabilities specifies the list of allowed capabilities that are kept for a process.

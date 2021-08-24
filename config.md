@@ -213,12 +213,22 @@ For Linux-based systems, the `process` object supports the following process-spe
 * **`selinuxLabel`** (string, OPTIONAL) specifies the SELinux label for the process.
     For more information about SELinux, see [SELinux documentation][selinux].
 * **`landlock`** (object, OPTIONAL) specifies the Landlock unprivileged access control settings for the container process.
+    Note that `noNewPrivileges` must be set to true to use this feature.
     For more information about Landlock, see [Landlock documentation][landlock].
     `landlock` contains the following properties:
 
     * **`ruleset`** (object, OPTIONAL) the `ruleset` field identifies a set of rules (i.e., actions on objects) that need to be handled (i.e., restricted).
-    * **`rules`** (array of objects, OPTIONAL) the `rules` field specifies the security policies (i.e., actions allowed on objects) to be added to an existing ruleset
+    The `ruleset` currently contains the following types:
+        * **`handledAccessFS`** (array of strings, OPTIONAL) is an array of FS typed actions that are handled by a ruleset.
+        If no rule explicitly allow them, they should then be forbidden.
+    * **`rules`** (object, OPTIONAL) the `rules` field specifies the security policies (i.e., actions allowed on objects) to be added to an existing ruleset.
+    The `rules` currently contains the following types:
+        * **`pathBeneath`** (array of objects, OPTIONAL) is an array of the file-hierarchy typed rules.
+        Entries in the array contain the following properties:
+            * **`allowedAccess`** (array of strings, OPTIONAL) is an array of FS typed actions that are allowed by a rule.
+            * **`paths`** (array of strings, OPTIONAL) is an array of files or parent directories of the file hierarchies to restrict.
     * **`abi`** (object, OPTIONAL) the `abi` field defines the specific Landlock ABI version.
+    This should be used by the runtime to check if the kernel supports the specified sets of Landlock features and then enforce those following a best-effort security approach.
 
 ### <a name="configUser" />User
 
@@ -262,61 +272,57 @@ _Note: symbolic name for uid and gid, such as uname and gname respectively, are 
     "selinuxLabel": "system_u:system_r:svirt_lxc_net_t:s0:c124,c675",
     "landlock": {
         "ruleset": {
-            "handledAcessFS": [
-                "LANDLOCK_ACCESS_FS_EXECUTE",
-                "LANDLOCK_ACCESS_FS_WRITE_FILE",
-                "LANDLOCK_ACCESS_FS_READ_FILE",
-                "LANDLOCK_ACCESS_FS_READ_DIR",
-                "LANDLOCK_ACCESS_FS_REMOVE_DIR",
-                "LANDLOCK_ACCESS_FS_REMOVE_FILE",
-                "LANDLOCK_ACCESS_FS_MAKE_CHAR",
-                "LANDLOCK_ACCESS_FS_MAKE_DIR",
-                "LANDLOCK_ACCESS_FS_MAKE_REG",
-                "LANDLOCK_ACCESS_FS_MAKE_SOCK",
-                "LANDLOCK_ACCESS_FS_MAKE_FIFO",
-                "LANDLOCK_ACCESS_FS_MAKE_BLOCK",
-                "LANDLOCK_ACCESS_FS_MAKE_SYM"
+            "handledAccessFS": [
+                "execute",
+                "write_file",
+                "read_file",
+                "read_dir",
+                "remove_dir",
+                "remove_file",
+                "make_char",
+                "make_dir",
+                "make_reg",
+                "make_sock",
+                "make_fifo",
+                "make_block",
+                "make_sym"
             ]
         },
-        "rules": [
-            {
-                "type": "path_beneath",
-                "restrictPaths": {
+        "rules": {
+            "pathBeneath": [
+                {
                     "allowedAccess": [
-                        "LANDLOCK_ACCESS_FS_EXECUTE",
-                        "LANDLOCK_ACCESS_FS_READ_FILE",
-                        "LANDLOCK_ACCESS_FS_READ_DIR"
+                        "execute",
+                        "read_file",
+                        "read_dir"
                     ],
                     "paths": [
                         "/usr",
                         "/bin"
                     ]
-                }
-            },
-            {
-                "type": "path_beneath",
-                "restrictPaths": {
+                },
+                {
                     "allowedAccess": [
-                        "LANDLOCK_ACCESS_FS_EXECUTE",
-                        "LANDLOCK_ACCESS_FS_WRITE_FILE",
-                        "LANDLOCK_ACCESS_FS_READ_FILE",
-                        "LANDLOCK_ACCESS_FS_READ_DIR",
-                        "LANDLOCK_ACCESS_FS_REMOVE_DIR",
-                        "LANDLOCK_ACCESS_FS_REMOVE_FILE",
-                        "LANDLOCK_ACCESS_FS_MAKE_CHAR",
-                        "LANDLOCK_ACCESS_FS_MAKE_DIR",
-                        "LANDLOCK_ACCESS_FS_MAKE_REG",
-                        "LANDLOCK_ACCESS_FS_MAKE_SOCK",
-                        "LANDLOCK_ACCESS_FS_MAKE_FIFO",
-                        "LANDLOCK_ACCESS_FS_MAKE_BLOCK",
-                        "LANDLOCK_ACCESS_FS_MAKE_SYM"
+                        "execute",
+                        "write_file",
+                        "read_file",
+                        "read_dir",
+                        "remove_dir",
+                        "remove_file",
+                        "make_char",
+                        "make_dir",
+                        "make_reg",
+                        "make_sock",
+                        "make_fifo",
+                        "make_block",
+                        "make_sym"
                     ],
                     "paths": [
                         "/tmp"
                     ]
                 }
-            },
-        ],
+            ]
+        },
         "abi": "v1"
     },
     "noNewPrivileges": true,
