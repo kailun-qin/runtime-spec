@@ -69,10 +69,11 @@ type Landlock struct {
 	Ruleset *LandlockRuleset `json:"ruleset,omitempty" platform:"linux"`
 	// Rules are the security policies (i.e., actions allowed on objects) to be added to an existing ruleset.
 	Rules *LandlockRules `json:"rules,omitempty" platform:"linux"`
-	// ABI is the specific Landlock ABI version.
-	// This should be used by the runtime to check if the kernel supports the specified sets of Landlock
-	// features and then enforce those following a best-effort security approach.
-	ABI LandlockABIVersion `json:"abi,omitempty" platform:"linux"`
+	// DisableBestEffort disables the best-effort security approach for Landlock access rights.
+	// This is for conditions when the Landlock access rights explicitly configured by the container are not
+	// supported or available in the running kernel.
+	// Default is false, i.e., following a best-effort security approach.
+	DisableBestEffort bool `json:"disableBestEffort,omitempty" platform:"linux"`
 }
 
 // LandlockRuleset identifies a set of rules (i.e., actions on objects) that need to be handled.
@@ -96,14 +97,6 @@ type LandlockRulePathBeneath struct {
 	// Paths are the files or parent directories of the file hierarchies to restrict.
 	Paths []string `json:"paths,omitempty" platform:"linux"`
 }
-
-// LandlockABIVersion used to identify the ABI level to use for Landlock.
-type LandlockABIVersion string
-
-// Define the supported Landlock ABI versions. There is currently only one supported Landlock ABI version.
-const (
-	V1 LandlockABIVersion = "v1"
-)
 
 // LandlockFSAction used to specify the FS actions that are handled by a ruleset or allowed by a rule.
 type LandlockFSAction string

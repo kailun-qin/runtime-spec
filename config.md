@@ -227,8 +227,11 @@ For Linux-based systems, the `process` object supports the following process-spe
         Entries in the array contain the following properties:
             * **`allowedAccess`** (array of strings, OPTIONAL) is an array of FS typed actions that are allowed by a rule.
             * **`paths`** (array of strings, OPTIONAL) is an array of files or parent directories of the file hierarchies to restrict.
-    * **`abi`** (object, OPTIONAL) the `abi` field defines the specific Landlock ABI version.
-    This should be used by the runtime to check if the kernel supports the specified sets of Landlock features and then enforce those following a best-effort security approach.
+    * **`disableBestEffort`** (bool, OPTIONAL) the `disableBestEffort` field disables the best-effort security approach for Landlock access rights.
+    This is for conditions when the Landlock access rights explicitly configured by the container are not supported or available in the running kernel.
+    If the best-effort security approach is enabled (`false`), the runtime SHOULD enforce the strongest rules configured up to the current kernel support, and only be [logged as a warning](runtime.md#warnings) for those not supported.
+    If disabled (`true`), the runtime MUST [generate an error](runtime.md#errors) if one or more rules specified by the container is not supported.
+	Default is `false`, i.e., following a best-effort security approach.
 
 ### <a name="configUser" />User
 
@@ -323,7 +326,7 @@ _Note: symbolic name for uid and gid, such as uname and gname respectively, are 
                 }
             ]
         },
-        "abi": "v1"
+        "disableBestEffort": false
     },
     "noNewPrivileges": true,
     "capabilities": {
