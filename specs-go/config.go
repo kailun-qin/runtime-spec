@@ -103,19 +103,19 @@ type LandlockFSAction string
 
 // Define actions on files and directories that Landlock can restrict a sandboxed process to.
 const (
-	FSActExecute    LandlockFSAction = "execute"
-	FSActWriteFile  LandlockFSAction = "write_file"
-	FSActReadFile   LandlockFSAction = "read_file"
-	FSActReadDir    LandlockFSAction = "read_dir"
-	FSActRemoveDir  LandlockFSAction = "remove_dir"
-	FSActRemoveFile LandlockFSAction = "remove_file"
-	FSActMakeChar   LandlockFSAction = "make_char"
-	FSActMakeDir    LandlockFSAction = "make_dir"
-	FSActMakeReg    LandlockFSAction = "make_reg"
-	FSActMakeSock   LandlockFSAction = "make_sock"
-	FSActMakeFifo   LandlockFSAction = "make_fifo"
-	FSActMakeBlock  LandlockFSAction = "make_block"
-	FSActMakeSym    LandlockFSAction = "make_sym"
+	LLFSActExecute    LandlockFSAction = "execute"
+	LLFSActWriteFile  LandlockFSAction = "write_file"
+	LLFSActReadFile   LandlockFSAction = "read_file"
+	LLFSActReadDir    LandlockFSAction = "read_dir"
+	LLFSActRemoveDir  LandlockFSAction = "remove_dir"
+	LLFSActRemoveFile LandlockFSAction = "remove_file"
+	LLFSActMakeChar   LandlockFSAction = "make_char"
+	LLFSActMakeDir    LandlockFSAction = "make_dir"
+	LLFSActMakeReg    LandlockFSAction = "make_reg"
+	LLFSActMakeSock   LandlockFSAction = "make_sock"
+	LLFSActMakeFifo   LandlockFSAction = "make_fifo"
+	LLFSActMakeBlock  LandlockFSAction = "make_block"
+	LLFSActMakeSym    LandlockFSAction = "make_sym"
 )
 
 // LinuxCapabilities specifies the list of allowed capabilities that are kept for a process.
